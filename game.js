@@ -1,0 +1,59 @@
+(function(){
+'use strict';
+const W=900,H=450,FLOOR=370;
+class Game{
+ constructor(random=Math.random){this.random=random;this.reset();}
+ reset(){this.player={x:430,y:FLOOR,vx:0,vy:0,face:1,hp:5,inv:0,attack:0,cool:0,struck:new Set()};this.enemies=[];this.particles=[];this.pickups=[];this.score=0;this.combo=0;this.comboTime=0;this.time=90;this.wave=1;this.kills=0;this.spawned=0;this.spawnClock=.7;this.waveDelay=0;this.state='playing';this.id=0;}
+ target(){return 3+this.wave*2;}
+ spawn(){this.enemies.push({id:++this.id,x:this.random()<.5?45:855,y:FLOOR,hp:this.wave===3?3:2,hit:0,knock:0,phase:this.random()*6.28});this.spawned++;}
+ burst(x,y,color){for(let n=0;n<12;n++)this.particles.push({x,y,vx:(this.random()-.5)*240,vy:-this.random()*200,life:.45+this.random()*.25,color});}
+ step(dt,input={}){if(this.state!=='playing')return;dt=Math.max(0,Math.min(.04,dt));const p=this.player;this.time=Math.max(0,this.time-dt);p.inv=Math.max(0,p.inv-dt);p.cool=Math.max(0,p.cool-dt);p.attack=Math.max(0,p.attack-dt);this.comboTime=Math.max(0,this.comboTime-dt);if(!this.comboTime)this.combo=0;
+ const move=Number(!!input.right)-Number(!!input.left);p.vx=move*270;if(move)p.face=move;p.x=Math.max(35,Math.min(W-35,p.x+p.vx*dt));
+ if(input.jump&&p.y>=FLOOR){p.vy=-540;}p.vy+=1450*dt;p.y=Math.min(FLOOR,p.y+p.vy*dt);if(p.y===FLOOR)p.vy=0;
+ if(input.attack&&p.cool===0){p.attack=.18;p.cool=.32;p.struck.clear();}
+ if(this.waveDelay>0){this.waveDelay-=dt;if(this.waveDelay<=0){this.wave++;this.spawned=0;this.kills=0;this.spawnClock=.4;}}
+ else{this.spawnClock-=dt;if(this.spawnClock<=0&&this.spawned<this.target()&&this.enemies.length<4){this.spawn();this.spawnClock=Math.max(.55,1.35-this.wave*.18);}}
+ for(const e of this.enemies){e.hit=Math.max(0,e.hit-dt);e.phase+=dt*5;const toward=Math.sign(p.x-e.x);e.x+=toward*(48+this.wave*12)*dt+e.knock*dt;e.knock*=Math.pow(.015,dt);e.x=Math.max(20,Math.min(880,e.x));
+ const dx=e.x-p.x,dy=e.y-p.y;
+ if(p.attack>0&&!p.struck.has(e.id)&&dx*p.face>=-18&&dx*p.face<112&&dy<100){p.struck.add(e.id);e.hp--;e.hit=.16;e.knock=p.face*480;this.burst(e.x,e.y-28,'#c2ff77');if(e.hp<=0){this.combo++;this.comboTime=2.2;this.score+=100+Math.min(this.combo,8)*25;this.kills++;if(this.kills===3)this.pickups.push({x:e.x,y:FLOOR-16,life:8});}}
+ if(e.hp>0&&p.inv===0&&Math.abs(dx)<43&&dy<60){p.hp--;p.inv=1.3;this.combo=0;this.burst(p.x,p.y-35,'#ff606e');p.x=Math.max(35,Math.min(865,p.x-toward*26));}}
+ this.enemies=this.enemies.filter(e=>e.hp>0);
+ for(const candy of this.pickups){candy.life-=dt;if(Math.abs(candy.x-p.x)<43&&Math.abs(candy.y-(p.y-20))<50){p.hp=Math.min(5,p.hp+1);this.score+=50;candy.life=0;this.burst(p.x,p.y-35,'#ffb44c');}}this.pickups=this.pickups.filter(c=>c.life>0);
+ for(const a of this.particles){a.life-=dt;a.x+=a.vx*dt;a.y+=a.vy*dt;a.vy+=500*dt;}this.particles=this.particles.filter(a=>a.life>0);
+ if(p.hp<=0||this.time<=0)this.state='lost';else if(this.spawned===this.target()&&this.enemies.length===0&&this.waveDelay<=0){if(this.wave===3)this.state='won';else this.waveDelay=1.8;}
+ }
+}
+if(typeof module!=='undefined'&&module.exports)module.exports={Game};
+if(typeof document==='undefined')return;
+const dialog=document.getElementById('arcade'),canvas=document.getElementById('game-canvas'),ctx=canvas.getContext('2d'),overlay=document.getElementById('game-overlay'),start=document.getElementById('game-start'),message=document.getElementById('game-message'),detail=document.getElementById('game-detail'),status=document.getElementById('game-status');
+const game=new Game(),held=new Set();let raf=0,last=0,running=false,paused=false,previous='',jumpPending=false,attackPending=false;
+ctx.imageSmoothingEnabled=false;
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
+function text(t,x,y,size,color,align='left'){ctx.fillStyle=color;ctx.font=`bold ${size}px monospace`;ctx.textAlign=align;ctx.fillText(t,x,y);}
+function tera(p){ctx.save();ctx.translate(Math.round(p.x),Math.round(p.y));if(p.inv>0&&Math.floor(p.inv*12)%2)ctx.globalAlpha=.45;
+ // Vampire cape, blue laptop, orange glasses, tiny fangs and badge.
+ctx.fillStyle='#c3324b';ctx.beginPath();ctx.moveTo(-28,-63);ctx.lineTo(-54,-80);ctx.lineTo(-44,-10);ctx.lineTo(48,-10);ctx.lineTo(54,-80);ctx.lineTo(28,-63);ctx.closePath();ctx.fill();
+rect(-35,-73,70,56,'#17234e');rect(-30,-68,60,44,'#acf0ff');rect(-43,-18,86,14,'#244a88');rect(-34,-17,68,5,'#638ed0');rect(-10,-8,20,4,'#90b4e4');
+rect(-25,-57,23,19,'#ff9d31');rect(3,-57,23,19,'#ff9d31');rect(-19,-53,13,11,'#f5ffff');rect(9,-53,13,11,'#f5ffff');rect(-3,-52,7,4,'#ff9d31');rect(-14,-51,7,8,'#10204c');rect(10,-51,7,8,'#10204c');
+rect(-7,-32,15,3,'#16203d');rect(-7,-29,3,5,'#fff');rect(5,-29,3,5,'#fff');rect(-6,-22,12,5,'#df3657');rect(22,-20,18,14,'#fff1d8');text('T',31,-10,10,'#172040','center');
+if(p.attack>0){const side=p.face;rect(side>0?38:-84,-55,46,10,'#ffb337');rect(side>0?76:-84,-64,8,28,'#fff1ab');rect(side>0?88:-94,-49,8,7,'#fff');text('ZAP!',side>0?76:-76,-76,13,'#ffcf66','center');}ctx.restore();}
+function virus(e){const y=e.y-30+Math.sin(e.phase)*4;ctx.save();ctx.translate(Math.round(e.x),Math.round(y));const color=e.hit>0?'#fff7be':game.wave===3?'#d882ff':'#99dd4e';rect(-22,-24,44,44,color);rect(-30,-10,60,14,color);rect(-8,-32,14,60,color);rect(-27,-28,9,9,color);rect(18,-28,9,9,color);rect(-27,19,9,9,color);rect(18,19,9,9,color);rect(-13,-12,8,10,'#1d1236');rect(6,-12,8,10,'#1d1236');rect(-8,7,18,5,'#1d1236');for(let i=0;i<e.hp;i++)rect(-14+i*10,-40,7,3,'#ffbd59');ctx.restore();}
+function draw(){rect(0,0,W,H,'#100d2b');for(let i=0;i<40;i++){const x=(i*137+29)%900,y=(i*67+20)%260;rect(x,y,3,3,i%3?'#69558e':'#f6c767');}ctx.fillStyle='#f4d273';ctx.beginPath();ctx.arc(748,86,46,0,Math.PI*2);ctx.fill();for(let i=0;i<9;i++){rect(i*116-20,220+(i%3)*24,95,150,'#25153b');rect(i*116,240+(i%3)*24,10,12,'#7f4363');}rect(0,FLOOR,W,80,'#251632');rect(0,FLOOR,W,5,'#a45e92');for(let x=0;x<W;x+=50){rect(x,FLOOR+28,27,3,'#583859');rect(x+20,FLOOR+58,28,3,'#583859');}text('TREAT CACHE',36,70,21,'#b586ef');text('QUARANTINE THE CREEPY CRAWLIES',36,95,13,'#9480ad');
+for(const c of game.pickups){ctx.fillStyle='#fff0b9';ctx.beginPath();ctx.moveTo(c.x,c.y-19);ctx.lineTo(c.x-12,c.y+9);ctx.lineTo(c.x+12,c.y+9);ctx.closePath();ctx.fill();rect(c.x-9,c.y,18,8,'#ff9d31');}for(const e of game.enemies)virus(e);tera(game.player);for(const a of game.particles)rect(a.x,a.y,5,5,a.color);
+if(game.combo>1&&game.comboTime>0)text(`${game.combo}x BYTE COMBO!`,W/2,52,20,'#ffb448','center');if(game.waveDelay>0){rect(250,150,400,60,'#170e2bed');text('WAVE CLEAN! NEXT SCAN…',450,186,20,'#c7f691','center');}}
+function hud(){document.getElementById('game-health').textContent='♥ '.repeat(Math.max(0,game.player.hp))+'♡ '.repeat(5-Math.max(0,game.player.hp));document.getElementById('game-score').textContent='BYTES '+String(game.score).padStart(4,'0');document.getElementById('game-wave').textContent=`WAVE ${game.wave} / 3`;document.getElementById('game-time').textContent=Math.ceil(game.time)+'s';}
+function finish(){running=false;held.clear();overlay.hidden=false;const won=game.state==='won';message.textContent=won?'SYSTEM CLEAN. TREATS UNLOCKED!':'TIME FOR A REBOOT!';detail.textContent=won?`Fangs for the backup! You cleared all 3 waves and earned ${game.score} bytes. Celebrate with a free sample from the BKM Tech Team.`:`You earned ${game.score} bytes. Face the viruses to zap them, jump to dodge, and grab candy corn for an extra heart.`;start.textContent='REBOOT & PLAY AGAIN';status.textContent=message.textContent;start.focus();}
+function frame(now){if(!running)return;const dt=last?(now-last)/1000:0;last=now;game.step(dt,{left:held.has('left'),right:held.has('right'),jump:jumpPending||held.has('jump'),attack:attackPending||held.has('attack')});jumpPending=false;attackPending=false;draw();hud();if(game.wave!==previous){previous=game.wave;status.textContent=`Wave ${game.wave} of 3`;}if(game.state!=='playing'){finish();return;}raf=requestAnimationFrame(frame);}
+function begin(){cancelAnimationFrame(raf);game.reset();held.clear();jumpPending=false;attackPending=false;overlay.hidden=true;paused=false;running=true;last=0;previous='';draw();hud();start.blur();canvas.focus();raf=requestAnimationFrame(frame);}
+function stop(){running=false;paused=false;held.clear();jumpPending=false;attackPending=false;cancelAnimationFrame(raf);document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'));}
+canvas.tabIndex=0;
+document.getElementById('open-game').addEventListener('click',()=>{dialog.showModal();game.reset();draw();hud();overlay.hidden=false;message.textContent='VIRUSES IN THE TREAT CACHE!';detail.textContent='Help vampire Tera clear 3 waves of spooky bugs. Jump and attack to quarantine every virus before the clock runs out.';start.textContent='START TROUBLESHOOTING';start.focus();});
+document.getElementById('close-game').addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{stop();document.getElementById('open-game').focus();});start.addEventListener('click',()=>{if(paused){paused=false;overlay.hidden=true;running=true;last=0;raf=requestAnimationFrame(frame);}else begin();});
+const keymap={ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right',ArrowUp:'jump',w:'jump',' ':'jump',k:'jump',z:'attack',j:'attack'};
+window.addEventListener('keydown',e=>{const action=keymap[e.key]||keymap[e.key.toLowerCase()];if(dialog.open&&running&&action&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();held.add(action);if(action==='jump')jumpPending=true;if(action==='attack')attackPending=true;}});window.addEventListener('keyup',e=>{const action=keymap[e.key]||keymap[e.key.toLowerCase()];if(action)held.delete(action);});
+function pause(){held.clear();jumpPending=false;attackPending=false;document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'));if(!running)return;running=false;paused=true;cancelAnimationFrame(raf);overlay.hidden=false;message.textContent='SCAN PAUSED';detail.textContent='Your treat cache is waiting. Ready to jump back in?';start.textContent='RESUME GAME';}
+window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
+for(const button of document.querySelectorAll('[data-control]')){const action=button.dataset.control;button.addEventListener('pointerdown',e=>{e.preventDefault();if(!running)return;button.setPointerCapture(e.pointerId);held.add(action);if(action==='jump')jumpPending=true;if(action==='attack')attackPending=true;button.classList.add('held');});for(const event of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(event,()=>{held.delete(action);button.classList.remove('held');});}
+draw();hud();
+})();
+
