@@ -3,3 +3,7 @@
 #game-canvas{cursor:crosshair;touch-action:manipulation}.leaderboard{margin-top:22px;border-top:1px solid #704099;padding-top:18px}.leaderboard h3{font:10px/1.8 var(--pixel);color:#ffc768}.board-note,#score-feedback{font:12px/1.6 Arial,sans-serif;color:#cbb7dd}#leaderboard-list{padding-left:28px;font:13px/1.7 Arial,sans-serif}#leaderboard-list li{padding:6px 4px}#leaderboard-list li span{display:inline-block;min-width:45%;overflow-wrap:anywhere}#leaderboard-list strong{float:right;color:#ffc768}#score-form{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font:12px Arial,sans-serif}#player-name{background:#28133d;border:1px solid #a277ef;color:#fff3cf;padding:12px;max-width:100%}#score-form button{background:#ffad43;border:0;color:#21102a;padding:12px;cursor:pointer;font:8px/1.6 var(--pixel)}
 
 #leaderboard-status{font:12px/1.6 Arial,sans-serif;color:#cbb7dd}#refresh-scores{background:#3d2258;color:#fff3cf;border:1px solid #9864c6;padding:10px;cursor:pointer;font:8px/1.6 var(--pixel)}#arcade button:disabled{opacity:.6;cursor:wait}
+
+#game-health{display:inline-flex;align-items:center;gap:5px}.health-bar{display:inline-block;width:23px;height:11px;border:1px solid #ff777e;background:#32192d}.health-bar.full{background:#ff777e;box-shadow:inset 0 -3px #bf4059}@media(max-width:560px){.health-bar{width:16px;height:9px}.game-hud{gap:7px}}
+
+.game-hud{position:sticky;top:0;z-index:2}
