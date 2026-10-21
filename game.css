@@ -11,3 +11,19 @@
 #score-form{background:#28133d;border:2px solid #ffbd59;padding:16px;margin:14px 0}#score-form label{width:100%;font-weight:bold;color:#ffc768}#score-feedback:empty{display:none}#score-feedback{color:#ffc768;font-weight:bold}#player-name{flex:1;min-width:120px}
 
 .score-privacy{width:100%;margin:0;color:#d5c1e9;font:12px/1.5 Arial,sans-serif}
+
+body.arcade-open{overflow:hidden}#arcade{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}#player-name{font-size:16px}.touch-help{display:none}
+@media(hover:none),(pointer:coarse){.keyboard-help{display:none}.touch-help{display:inline}.touch-controls button{min-height:48px}}
+@media(max-height:500px) and (orientation:landscape){
+ .arcade-shell{padding:8px}.arcade-kicker{font-size:6px}.arcade-head h2{font-size:10px;margin:5px 0 10px}.arcade-head button{width:32px;height:32px;font-size:20px}
+ .game-hud{padding:8px;font-size:7px;gap:8px;margin-bottom:8px}.health-bar{width:18px;height:9px}
+ .game-screen{min-height:0;width:min(100%,calc((100svh - 185px)*2));margin-inline:auto}#game-canvas{min-height:0;height:auto;aspect-ratio:2/1;object-fit:contain}
+ .touch-controls{margin-top:8px}.touch-controls button{min-width:48px;min-height:44px;padding:8px;font-size:8px}
+ #game-overlay{padding:10px}.overlay-icon{display:none}#game-message{font-size:11px;margin:5px 0 8px}#game-detail{font-size:12px;line-height:1.4;margin-bottom:10px}#game-start{font-size:8px;padding:10px}
+ #arcade.playing .game-instructions{display:none}
+}
+
+@media(max-height:500px) and (orientation:landscape){#arcade:not(.playing) .game-screen{width:min(100%,440px);min-height:220px}#arcade:not(.playing) #game-canvas{height:220px;min-height:220px;object-fit:contain}}
+@media(max-width:600px),(pointer:coarse){#game-start,#score-form button,#refresh-scores,#close-game{min-height:44px}#close-game{min-width:44px}}
+
+#arcade{overflow-anchor:none}
