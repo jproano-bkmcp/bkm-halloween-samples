@@ -7,3 +7,7 @@
 #game-health{display:inline-flex;align-items:center;gap:5px}.health-bar{display:inline-block;width:23px;height:11px;border:1px solid #ff777e;background:#32192d}.health-bar.full{background:#ff777e;box-shadow:inset 0 -3px #bf4059}@media(max-width:560px){.health-bar{width:16px;height:9px}.game-hud{gap:7px}}
 
 .game-hud{position:sticky;top:0;z-index:2}
+
+#score-form{background:#28133d;border:2px solid #ffbd59;padding:16px;margin:14px 0}#score-form label{width:100%;font-weight:bold;color:#ffc768}#score-feedback:empty{display:none}#score-feedback{color:#ffc768;font-weight:bold}#player-name{flex:1;min-width:120px}
+
+.score-privacy{width:100%;margin:0;color:#d5c1e9;font:12px/1.5 Arial,sans-serif}
