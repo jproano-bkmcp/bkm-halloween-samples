@@ -35,3 +35,5 @@ body.arcade-open{overflow:hidden}#arcade{overscroll-behavior:contain;-webkit-ove
 .storage-guide{margin:8px 0 14px;color:#cfbddf;font:12px/1.6 Arial,sans-serif}.storage-guide summary{cursor:pointer;color:#ffc768;padding:6px 0}.storage-guide table{width:100%;border-collapse:collapse}.storage-guide th,.storage-guide td{padding:6px 8px;text-align:left;border-bottom:1px solid #724a91}.storage-guide th{color:#ffc768}.storage-guide p{max-width:650px}
 
 #game-pause{align-self:center;min-width:72px;font:8px/1.4 var(--pixel);padding:9px 6px}#game-pause:disabled{opacity:.45;cursor:default}@media(max-width:560px){#game-pause{min-width:62px;font-size:7px;padding:8px 4px}.touch-controls{gap:5px}}
+
+#player-name{font-family:var(--pixel);font-size:16px;line-height:1.6}#player-name::placeholder{font-family:var(--pixel);font-size:12px;letter-spacing:1px}
