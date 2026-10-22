@@ -27,3 +27,5 @@ body.arcade-open{overflow:hidden}#arcade{overscroll-behavior:contain;-webkit-ove
 @media(max-width:600px),(pointer:coarse){#game-start,#score-form button,#refresh-scores,#close-game{min-height:44px}#close-game{min-width:44px}}
 
 #arcade{overflow-anchor:none}
+
+.made-year,.game-year{font:10px/1.6 Arial,sans-serif;color:#ae95c0;margin:8px 0 0}.game-year{text-align:center;margin-top:20px}.item-legend{font:12px/1.8 Arial,sans-serif;color:#ffc768;text-align:center}@media(max-height:500px) and (orientation:landscape){#arcade.playing .item-legend{display:none}}
