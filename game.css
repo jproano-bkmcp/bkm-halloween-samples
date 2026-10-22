@@ -29,3 +29,5 @@ body.arcade-open{overflow:hidden}#arcade{overscroll-behavior:contain;-webkit-ove
 #arcade{overflow-anchor:none}
 
 .made-year,.game-year{font:10px/1.6 Arial,sans-serif;color:#ae95c0;margin:8px 0 0}.game-year{text-align:center;margin-top:20px}.item-legend{font:12px/1.8 Arial,sans-serif;color:#ffc768;text-align:center}@media(max-height:500px) and (orientation:landscape){#arcade.playing .item-legend{display:none}}
+
+.score-units{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0;color:#cfbddf;font:12px/1.5 Arial,sans-serif}.score-units select{color:#fff3cf;background:#301943;border:1px solid #a277ef;padding:8px;font-size:16px;min-height:44px}.score-units span{color:#a78dbb;font-size:11px}#game-score{overflow-wrap:anywhere}@media(max-width:600px){.score-units span{flex-basis:100%}}
