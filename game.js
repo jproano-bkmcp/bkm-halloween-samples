@@ -16,7 +16,7 @@ function formatBytes(bytes,unit='bytes'){
  return value.toLocaleString('en-US')+' '+(value===1n?'byte':'bytes');
 }
 function glowColor(elapsed,reduced=false){if(reduced)return LASER_COLORS[1];const colors=[[255,59,64],[255,228,67],[52,133,255]],phase=((elapsed%3)+3)%3,index=Math.floor(phase),blend=phase-index;return '#'+colors[index].map((v,n)=>Math.round(v+(colors[(index+1)%3][n]-v)*blend).toString(16).padStart(2,'0')).join('');}
-function parallaxOffset(elapsed,scroll,factor,reduced=false){return reduced?0:(elapsed*30+scroll*2)*factor;}
+function parallaxOffset(elapsed,scroll,factor,reduced=false){return reduced?0:elapsed*30*factor;}
 function windowLit(building,row,col,elapsed,reduced=false){const base=((building*7+row*3+col)%5+5)%5<3;return reduced||Math.floor(elapsed/2)%2===0?base:!base;}
 class Game{
  constructor(random=Math.random){this.random=random;this.reset();}
