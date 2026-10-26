@@ -14,6 +14,8 @@ function wormVariant(random,wave,elapsed=0){const palette=Math.min(WORM_PALETTES
 function wormDifficulty(wave,elapsed){return {speed:Math.min(210,55+wave*8+elapsed*.12),spawnDelay:Math.max(.25,1.2-wave*.07-elapsed*.0015),replicationDelay:Math.max(3,6-elapsed/90),capacity:Math.min(12,4+Math.floor(wave/2)+Math.floor(elapsed/60)),hpBonus:Math.min(2,Math.floor(elapsed/120)),extraSpawns:Math.min(8,Math.floor(elapsed/45)*2)};}
 function wormScale(enemy){return enemy.kind==='worm'?(enemy.scale||1):1;}
 
+function visitDevice(info){const ua=String(info.userAgent||'');if(/iPad|Tablet|Android(?!.*Mobile)/i.test(ua)||(/Macintosh/i.test(ua)&&info.maxTouchPoints>1))return 'tablet';if(info.userAgentData?.mobile||/iPhone|iPod|Mobile|Windows Phone/i.test(ua))return 'phone';return /Windows|Macintosh|X11|Linux|CrOS/i.test(ua)?'computer':'unknown';}
+function siteVisitId(storage,now,makeId){const key='tera-site-visit-v1';try{const previous=JSON.parse(storage.getItem(key)||'null');if(previous&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(previous.id)&&Number.isFinite(previous.started)&&now>=previous.started&&now-previous.started<30*60*1000)return previous.id;}catch(error){}const id=makeId();try{storage.setItem(key,JSON.stringify({id,started:now}));}catch(error){}return id;}
 function progressSnapshot(run,id,outcome=run.state){return {p_run:id,p_mode:run.mode,p_level:run.level,p_wave:run.wave,p_score:run.score,p_outcome:outcome,p_seconds:Math.floor(run.elapsed)};}
 
 // Binary storage ladder uses IEC names; the underlying score remains an exact byte count.
@@ -109,7 +111,7 @@ class Game{
  if(p.hp<=0||(this.mode!=='worm'&&this.time<=0))this.state='lost';else if(this.spawned===this.target()&&this.enemies.length===0&&this.waveDelay<=0){this.bullets=[];if(this.mode==='worm')this.waveDelay=1.8;else if(this.wave===3)this.state=this.level===LEVELS?'won':'levelclear';else this.waveDelay=1.8;}
  }
 }
-if(typeof module!=='undefined'&&module.exports)module.exports={Game,points,formatBytes,glowColor,parallaxOffset,starBrightness,windowLit,wingPose,ENEMY_DAMAGE,progressSnapshot,WORM_PALETTES,wormVariant,wormDifficulty};
+if(typeof module!=='undefined'&&module.exports)module.exports={Game,points,formatBytes,glowColor,parallaxOffset,starBrightness,windowLit,wingPose,ENEMY_DAMAGE,progressSnapshot,visitDevice,siteVisitId,WORM_PALETTES,wormVariant,wormDifficulty};
 if(typeof document==='undefined')return;
 const dialog=document.getElementById('arcade'),canvas=document.getElementById('game-canvas'),ctx=canvas.getContext('2d'),overlay=document.getElementById('game-overlay'),start=document.getElementById('game-start'),message=document.getElementById('game-message'),detail=document.getElementById('game-detail'),status=document.getElementById('game-status');
 const game=new Game(),held=new Set();let selectedMode='arcade';let raf=0,last=0,running=false,paused=false,previous='',jumpPending=false,attackPending=false,aimPending=null;
@@ -131,7 +133,13 @@ function selectBoard(mode){if(mode!==boardMode){boardMode=mode;scores=[];renderS
 
 let scoreUnit='auto';
 document.getElementById('score-unit').addEventListener('change',e=>{scoreUnit=e.target.value;hud();renderScores();});
-async function scoreRequest(method,payload={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);try{const response=await fetch(scoreApi+method,{method:'POST',headers:{apikey:scoreApiKey,'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal,keepalive:method==='tera_record_progress'});if(!response.ok)throw new Error('Score service unavailable');const body=await response.text();return body?JSON.parse(body):null;}finally{clearTimeout(timer);}}
+async function scoreRequest(method,payload={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);try{const response=await fetch(scoreApi+method,{method:'POST',headers:{apikey:scoreApiKey,'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal,keepalive:method==='tera_record_progress'||method==='tera_record_visit'});if(!response.ok)throw new Error('Score service unavailable');const body=await response.text();return body?JSON.parse(body):null;}finally{clearTimeout(timer);}}
+function recordSiteVisit(){
+ if(!progressEnabled||window.location.hostname!=='jproano-bkmcp.github.io'||!window.location.pathname.startsWith('/bkm-halloween-samples/'))return;
+ let storage;try{storage=window.sessionStorage;}catch(error){storage=null;}
+ const payload={p_visit:siteVisitId(storage,Date.now(),()=>crypto.randomUUID()),p_device:visitDevice(navigator)};
+ const send=(attempt=0)=>scoreRequest('tera_record_visit',payload).catch(()=>{if(attempt<2)setTimeout(()=>send(attempt+1),3000*(attempt+1));});send();
+}
 function trackProgress(outcome=game.state){
  if(!progressEnabled||!runId)return;
  const payload=progressSnapshot(game,runId,outcome),key=[runId,payload.p_mode,payload.p_level,payload.p_wave,outcome,Math.floor(game.elapsed/20)].join(':');
@@ -233,6 +241,8 @@ window.addEventListener('blur',pause);document.addEventListener('visibilitychang
 for(const button of document.querySelectorAll('[data-control]')){const action=button.dataset.control;button.addEventListener('pointerdown',e=>{e.preventDefault();if(!running)return;button.setPointerCapture(e.pointerId);held.add(action);if(action==='jump')jumpPending=true;if(action==='attack')attackPending=true;button.classList.add('held');});for(const event of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(event,()=>{held.delete(action);button.classList.remove('held');});}
 window.addEventListener('pagehide',()=>{if(runId&&game.state==='playing')trackProgress('abandoned');});
 document.addEventListener('tera-halloween-opening',pause);
+window.addEventListener('pageshow',event=>{if(event.persisted)recordSiteVisit();});
+recordSiteVisit();
 draw();hud();
 })();
 
