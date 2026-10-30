@@ -67,3 +67,16 @@ body.arcade-open{overflow:hidden}#arcade{overscroll-behavior:contain;-webkit-ove
 @media(max-width:380px){.mobile-controls .touch-controls>div:not(.joystick-group){flex-direction:column}.mobile-controls [data-control=attack]{min-height:60px;min-width:72px}.mobile-controls [data-control=jump]{min-height:48px;min-width:72px}}
 @media(orientation:landscape) and (max-height:600px){.mobile-controls .game-stage.focused{padding:64px 136px 10px}.mobile-controls .game-stage.focused .game-screen{width:min(100%,calc((100dvh - 74px)*2));max-height:calc(100dvh - 74px)}.mobile-controls .game-stage.focused .touch-controls{background:none;pointer-events:none}.mobile-controls .game-stage.focused .touch-controls>div:not(.joystick-group){flex-direction:column;gap:8px}.mobile-controls .game-stage.focused #game-pause{position:absolute;left:12px;bottom:155px}.mobile-controls .game-stage.focused .joystick-group{pointer-events:auto}.mobile-controls .game-stage.focused [data-control=attack]{min-width:100px}.mobile-controls .game-stage.focused [data-control=jump]{min-width:100px}}
 .mobile-controls .game-stage.focused .touch-controls{justify-content:space-between}
+
+/* Stable windowed playfield: overlays and pauses never resize the canvas. */
+#arcade:not(.expanded){scroll-behavior:auto;overflow-anchor:none;scrollbar-gutter:stable}
+#arcade .game-stage:not(.focused) .game-screen{width:min(100%,calc(max(300px,100dvh - 280px)*2));min-height:0;margin-inline:auto;aspect-ratio:2/1}
+#arcade .game-stage:not(.focused) #game-canvas{width:100%;height:auto;min-height:0;aspect-ratio:2/1;object-fit:contain}
+#arcade.playing .game-instructions,#arcade.playing .item-legend{display:block}
+#arcade.playing .score-units{display:flex}
+#arcade.playing .storage-guide{display:block}
+@media(max-height:500px) and (orientation:landscape){
+ #arcade .game-stage:not(.focused) .game-screen{width:min(100%,calc(max(220px,100dvh - 160px)*2))}
+}
+
+@media(max-width:560px){#arcade .game-stage:not(.focused) .game-screen{min-height:200px}#arcade .game-stage:not(.focused) #game-canvas{min-height:200px}}
